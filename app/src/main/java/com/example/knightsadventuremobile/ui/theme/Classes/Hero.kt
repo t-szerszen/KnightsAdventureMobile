@@ -18,10 +18,13 @@ class Hero(
     override fun attack(opponent: Character): String
     {
         var damage = Random.Default.nextInt(attackPower / 2, attackPower)
+        var message = ""
 
         // Sprawdzamy czy przeciwnik się broni
-        if (isOpponentDefending(opponent)) {
+        val result = isOpponentDefending(opponent)
+        if (result.isDefending) {
             damage = (damage * 0.5).toInt()
+            message += "\n" + result.message
         }
 
         // Dodatkowy bonus do ataku z poprzedniej tury defensywnej lub eliksiru
@@ -37,7 +40,7 @@ class Hero(
         opponent.health -= damage
         if (opponent.health < 0) opponent.health = 0
 
-        val message = """
+        message += """
             ⚔️ $name atakuje ${opponent.name} i zadaje $damage obrażeń!
             ❤️ HP przeciwnika: ${opponent.health}
         """.trimIndent()

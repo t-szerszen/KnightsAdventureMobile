@@ -16,15 +16,19 @@ class Monster(
     override fun attack(opponent: Character): String {
         var damage = Random.Default.nextInt(attackPower / 2, attackPower)
         val bodyPart = Random.Default.nextInt(1, 4) // 1 - głowa, 2 - tułów, 3 - nogi
+        var message = ""
 
         // Sprawdzamy czy przeciwnik się broni
-        if (isOpponentDefending(opponent)) {
+        val defendingResult = isOpponentDefending(opponent)
+        if (defendingResult.isDefending) {
             damage = (damage * 0.5).toInt()
+            message += "\n" + defendingResult.message
         }
 
         // Redukujemy obrażenia jeśli bohater ma jakiś pancerz
         val result = bodyPartHitted(bodyPart, opponent, damage)
         damage = result.damage
+        message += "\n" + result.message
 
         // Dodatkowy bonus do ataku z poprzedniej tury defensywnej lub eliksiru
         if (hasExtraAttack()) {
@@ -36,7 +40,7 @@ class Monster(
         opponent.health -= damage
         if (opponent.health < 0) opponent.health = 0
 
-        val message = """
+        message += """
             ⚔️ ${name} zadaje ${damage} obrażeń ${opponent.name}!
             ❤️ HP ${opponent.name}: ${opponent.health}
         """
@@ -59,7 +63,7 @@ class Monster(
                 message = "\uD83D\uDCA5 ${name} uderza w głowę!"
                 if (opponent.equipment.contains("Hełm")) {
                     val reduced = (damage * armorFactor).toInt()
-                    message += "🪖 Hełm ${opponent.name} redukuje (${(armorFactor * 100).toInt()}% obrażeń)"
+                    message += "\n🪖 Hełm ${opponent.name} redukuje (${(armorFactor * 100).toInt()}% obrażeń)"
                     opponent.equipment.remove("Hełm")
                     damage = reduced
                 }
@@ -68,7 +72,7 @@ class Monster(
                 message = "\uD83D\uDCA5 ${name} uderza w tułów!"
                 if (opponent.equipment.contains("Kolczuga")) {
                     val reduced = (damage * armorFactor).toInt()
-                    message += "🛡️ Kolczuga ${opponent.name} amortyzuje ${(armorFactor * 100).toInt()}% obrażeń"
+                    message += "\n🛡️ Kolczuga ${opponent.name} amortyzuje ${(armorFactor * 100).toInt()}% obrażeń"
                     opponent.equipment.remove("Kolczuga")
                     damage = reduced
                 }
@@ -77,7 +81,7 @@ class Monster(
                 message = "\uD83D\uDCA5 ${name} uderza w nogi!"
                 if (opponent.equipment.contains("Nagolenniki")) {
                     val reduced = (damage * armorFactor).toInt()
-                    message += "🩳 Nagolenniki ${opponent.name} redukują ${(armorFactor * 100).toInt()} obrażeń"
+                    message += "\n🩳 Nagolenniki ${opponent.name} redukują ${(armorFactor * 100).toInt()} obrażeń"
                     opponent.equipment.remove("Nagolenniki")
                     damage = reduced
                 }
@@ -109,7 +113,7 @@ class Monster(
         extraAttack = 1.2
         health += 10
         elixirUsed = true
-        message += "Obecne HP: ${health}\n"
+        message += "\nObecne HP: ${health}\n"
 
         return message
     }
