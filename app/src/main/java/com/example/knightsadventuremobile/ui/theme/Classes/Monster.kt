@@ -13,7 +13,7 @@ class Monster(
     elixirUsed: Boolean
 ) : Character(name, health, attackPower, equipment, isDefending, extraAttack, elixirUsed)
 {
-    override fun attack(opponent: Character) {
+    override fun attack(opponent: Character): String {
         var damage = Random.Default.nextInt(attackPower / 2, attackPower)
         val bodyPart = Random.Default.nextInt(1, 4) // 1 - głowa, 2 - tułów, 3 - nogi
 
@@ -23,7 +23,8 @@ class Monster(
         }
 
         // Redukujemy obrażenia jeśli bohater ma jakiś pancerz
-        damage = bodyPartHitted(bodyPart, opponent, damage)
+        val result = bodyPartHitted(bodyPart, opponent, damage)
+        damage = result.damage
 
         // Dodatkowy bonus do ataku z poprzedniej tury defensywnej lub eliksiru
         if (hasExtraAttack()) {
@@ -35,71 +36,81 @@ class Monster(
         opponent.health -= damage
         if (opponent.health < 0) opponent.health = 0
 
-        println("\n⚔️ ${name} zadaje ${damage} obrażeń ${opponent.name}!")
-        println("❤️ HP ${opponent.name}: ${opponent.health}\n")
+        val message = """
+            ⚔️ ${name} zadaje ${damage} obrażeń ${opponent.name}!
+            ❤️ HP ${opponent.name}: ${opponent.health}
+        """
+
+        return message
     }
 
-    private fun bodyPartHitted(bodyPart: Int, opponent: Character, initialDamage: Int): Int {
+    data class HitResult(
+        val damage: Int,
+        val message: String
+    )
+
+    private fun bodyPartHitted(bodyPart: Int, opponent: Character, initialDamage: Int): HitResult {
         var damage = initialDamage
         val armorFactor = Random.Default.nextDouble(0.5, 1.0)
+        var message = ""
 
         when (bodyPart) {
             1 -> {
-                println("\uD83D\uDCA5 ${name} uderza w głowę!")
+                message = "\uD83D\uDCA5 ${name} uderza w głowę!"
                 if (opponent.equipment.contains("Hełm")) {
                     val reduced = (damage * armorFactor).toInt()
-                    println("🪖 Hełm ${opponent.name} redukuje (${(armorFactor * 100).toInt()}% obrażeń)")
+                    message += "🪖 Hełm ${opponent.name} redukuje (${(armorFactor * 100).toInt()}% obrażeń)"
                     opponent.equipment.remove("Hełm")
                     damage = reduced
                 }
             }
             2 -> {
-                println("\uD83D\uDCA5 ${name} uderza w tułów!")
+                message = "\uD83D\uDCA5 ${name} uderza w tułów!"
                 if (opponent.equipment.contains("Kolczuga")) {
                     val reduced = (damage * armorFactor).toInt()
-                    println("🛡️ Kolczuga ${opponent.name} amortyzuje ${(armorFactor * 100).toInt()}% obrażeń")
+                    message += "🛡️ Kolczuga ${opponent.name} amortyzuje ${(armorFactor * 100).toInt()}% obrażeń"
                     opponent.equipment.remove("Kolczuga")
                     damage = reduced
                 }
             }
             3 -> {
-                println("\uD83D\uDCA5 ${name} uderza w nogi!")
+                message = "\uD83D\uDCA5 ${name} uderza w nogi!"
                 if (opponent.equipment.contains("Nagolenniki")) {
                     val reduced = (damage * armorFactor).toInt()
-                    println("🩳 Nagolenniki ${opponent.name} redukują ${(armorFactor * 100).toInt()} obrażeń")
+                    message += "🩳 Nagolenniki ${opponent.name} redukują ${(armorFactor * 100).toInt()} obrażeń"
                     opponent.equipment.remove("Nagolenniki")
                     damage = reduced
                 }
             }
         }
-        return damage
+        return HitResult(damage, message)
     }
 
-    override fun defense()
+    override fun defense(): String
     {
-        println(
-            """
+        val message = """
             🛡️ ${name} przyjmuje pozycję obronną!
             Zyskuje zwiększoną ochronę przed obrażeniami 
             i przygotowuje silniejszy kontratak w następnej turze.
-            """.trimIndent()
-        )
+        """.trimIndent()
         isDefending = true
         extraAttack = 1.5
+
+        return message
     }
 
-    override fun drinkElixir()
+    override fun drinkElixir(): String
     {
-        println(
-            """
+        var message = """
             🧪 ${name} wypija magiczny eliksir!
             ✨ Siła ataku chwilowo wzrasta o 20%.
             ❤️ ${name} odzyskuje 10 punktów zdrowia.
-            """.trimIndent()
-        )
+        """.trimIndent()
         extraAttack = 1.2
         health += 10
         elixirUsed = true
-        println("Obecne HP: ${health}\n")
+        message += "Obecne HP: ${health}\n"
+
+        return message
     }
 }

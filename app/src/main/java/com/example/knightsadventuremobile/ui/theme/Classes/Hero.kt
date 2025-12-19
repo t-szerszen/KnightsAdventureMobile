@@ -15,7 +15,7 @@ class Hero(
 {
     var gold: Int = 0
 
-    override fun attack(opponent: Character)
+    override fun attack(opponent: Character): String
     {
         var damage = Random.Default.nextInt(attackPower / 2, attackPower)
 
@@ -37,8 +37,12 @@ class Hero(
         opponent.health -= damage
         if (opponent.health < 0) opponent.health = 0
 
-        println("\n⚔️ ${name} atakuje ${opponent.name} i zadaje ${damage} obrażeń!")
-        println("❤️ HP przeciwnika: ${opponent.health}\n")
+        val message = """
+            ⚔️ $name atakuje ${opponent.name} i zadaje $damage obrażeń!
+            ❤️ HP przeciwnika: ${opponent.health}
+        """.trimIndent()
+
+        return message
     }
 
     private fun hasSword(): Boolean
@@ -47,31 +51,31 @@ class Hero(
         return false
     }
 
-    override fun defense()
+    override fun defense(): String
     {
-        println(
-            """
+        val message = """
             🛡️ ${name} przyjmuje pozycję obronną!
             Zyskuje zwiększoną ochronę przed obrażeniami 
             i przygotowuje silniejszy kontratak w następnej turze.
-            """.trimIndent()
-        )
+        """.trimIndent()
         isDefending = true
         extraAttack = 1.5
+
+        return message
     }
 
-    override fun drinkElixir()
+    override fun drinkElixir(): String
     {
-        println(
-            """
+        var message = """
             🧪 ${name} wypija magiczny eliksir!
             ✨ Siła ataku chwilowo wzrasta o 20%.
             ❤️ Odzyskujesz 10 punktów zdrowia.
-            """.trimIndent()
-        )
+        """.trimIndent()
         extraAttack = 1.2
         health += 10
         elixirUsed = true
-        println("Obecne HP: ${health}\n")
+        message += "\nObecne HP: ${health}\n"
+
+        return message
     }
 }

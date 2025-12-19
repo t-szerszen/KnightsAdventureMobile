@@ -11,18 +11,23 @@ abstract class Character (
     var elixirUsed: Boolean = false
 )
 {
-    abstract fun attack (opponent: Character)
-    abstract fun defense ()
-    abstract fun drinkElixir ()
+    abstract fun attack (opponent: Character): String
+    abstract fun defense (): String
+    abstract fun drinkElixir (): String
 
-    fun isOpponentDefending(opponent: Character): Boolean
+    data class isDefendingResult (
+        val isDefending: Boolean,
+        val message: String?
+    )
+
+    fun isOpponentDefending(opponent: Character): isDefendingResult
     {
         if ((opponent as? Monster)?.isDefending == true) {
             opponent.isDefending = false
-            println("🛡️ ${opponent.name} broni się! Obrażenia zostają zredukowane o połowę.")
-            return true
+            val message = "🛡️ ${opponent.name} broni się! Obrażenia zostają zredukowane o połowę."
+            return isDefendingResult(true, message)
         }
-        return false
+        return isDefendingResult(false, null)
     }
 
     fun hasExtraAttack() = extraAttack != 0.0
