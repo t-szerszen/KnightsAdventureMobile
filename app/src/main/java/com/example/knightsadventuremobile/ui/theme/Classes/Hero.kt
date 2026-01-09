@@ -22,9 +22,9 @@ class Hero(
 
         // Sprawdzamy czy przeciwnik się broni
         val result = isOpponentDefending(opponent)
-        if (result.isDefending) {
+        if (result.value) {
             damage = (damage * 0.5).toInt()
-            message += "\n" + result.message
+            message += "\n" + result.extra
         }
 
         // Dodatkowy bonus do ataku z poprzedniej tury defensywnej lub eliksiru

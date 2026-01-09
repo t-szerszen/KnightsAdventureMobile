@@ -8,9 +8,11 @@ class FightMode {
     // Metoda rozpoczynająca walkę na arenie potworów.
     fun startBattle(round: Int, hero: Hero, monster: Monster) {
         var i:Int = 1
-        println("\n" + "=".repeat(50))
-        println("🏹  Rozpoczyna się bitwa $round!")
-        println("=" .repeat(50))
+        var message = """ 
+            ${"=".repeat(50)}
+            "🏹  Rozpoczyna się bitwa $round!"
+            ${"=" .repeat(50)}
+        """
 
         while (hero.health > 0 && monster.health > 0) {
             println("\n" + "-".repeat(40))
@@ -43,7 +45,7 @@ class FightMode {
 
     fun loadUserMove (hero: Hero, monster: Monster)
     {
-        println("\n❓ Co chcesz zrobić? (1 - Atak, 2 - Obrona, 3 - Eliksir)")
+        var message = "\n❓ Co chcesz zrobić? (1 - Atak, 2 - Obrona, 3 - Eliksir)"
         while (true) {
             when (readLine()?.trim()) {
                 "1" -> {hero.attack(monster); break}

@@ -1,5 +1,6 @@
 package com.example.knightsadventuremobile.ui.theme.Classes
 
+import com.example.knightsadventuremobile.ui.theme.Models.GameResponse
 import kotlin.random.Random
 
 // Klasa modelująca obiekt potwora z areny.
@@ -20,15 +21,15 @@ class Monster(
 
         // Sprawdzamy czy przeciwnik się broni
         val defendingResult = isOpponentDefending(opponent)
-        if (defendingResult.isDefending) {
+        if (defendingResult.value) {
             damage = (damage * 0.5).toInt()
-            message += "\n" + defendingResult.message
+            message += "\n" + defendingResult.extra
         }
 
         // Redukujemy obrażenia jeśli bohater ma jakiś pancerz
         val result = bodyPartHitted(bodyPart, opponent, damage)
-        damage = result.damage
-        message += "\n" + result.message
+        damage = result.value
+        message += "\n" + result.extra
 
         // Dodatkowy bonus do ataku z poprzedniej tury defensywnej lub eliksiru
         if (hasExtraAttack()) {
@@ -47,13 +48,7 @@ class Monster(
 
         return message
     }
-
-    data class HitResult(
-        val damage: Int,
-        val message: String
-    )
-
-    private fun bodyPartHitted(bodyPart: Int, opponent: Character, initialDamage: Int): HitResult {
+    private fun bodyPartHitted(bodyPart: Int, opponent: Character, initialDamage: Int): GameResponse<Int, String> {
         var damage = initialDamage
         val armorFactor = Random.Default.nextDouble(0.5, 1.0)
         var message = ""
@@ -87,7 +82,7 @@ class Monster(
                 }
             }
         }
-        return HitResult(damage, message)
+        return GameResponse(damage, message)
     }
 
     override fun defense(): String

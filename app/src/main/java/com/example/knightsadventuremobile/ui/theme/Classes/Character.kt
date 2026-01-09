@@ -1,5 +1,7 @@
 package com.example.knightsadventuremobile.ui.theme.Classes
 
+import com.example.knightsadventuremobile.ui.theme.Models.GameResponse
+
 // Klasa modelująca ogólny obiekt postaci w grze.
 abstract class Character (
     val name: String,
@@ -15,19 +17,14 @@ abstract class Character (
     abstract fun defense (): String
     abstract fun drinkElixir (): String
 
-    data class isDefendingResult (
-        val isDefending: Boolean,
-        val message: String?
-    )
-
-    fun isOpponentDefending(opponent: Character): isDefendingResult
+    fun isOpponentDefending(opponent: Character): GameResponse<Boolean, String?>
     {
         if ((opponent as? Monster)?.isDefending == true) {
             opponent.isDefending = false
             val message = "🛡️ ${opponent.name} broni się! Obrażenia zostają zredukowane o połowę."
-            return isDefendingResult(true, message)
+            return GameResponse(true, message)
         }
-        return isDefendingResult(false, null)
+        return GameResponse(false, null)
     }
 
     fun hasExtraAttack() = extraAttack != 0.0
