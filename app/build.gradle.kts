@@ -12,8 +12,8 @@ android {
 
     defaultConfig {
         applicationId = "com.example.knightsadventuremobile"
-        minSdk = 31
-        targetSdk = 36
+        minSdk = 29
+        targetSdk = 29
         versionCode = 1
         versionName = "1.0"
 

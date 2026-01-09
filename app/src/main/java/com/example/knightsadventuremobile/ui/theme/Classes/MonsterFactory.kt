@@ -1,6 +1,4 @@
-package Classes
-
-import com.example.knightsadventuremobile.ui.theme.Classes.Monster
+package com.example.knightsadventuremobile.ui.theme.Classes
 
 class MonsterFactory {
     fun generateMonster (round: Int): Monster

@@ -19,7 +19,7 @@ abstract class Character (
 
     fun isOpponentDefending(opponent: Character): GameResponse<Boolean, String?>
     {
-        if ((opponent as? Monster)?.isDefending == true) {
+        if (opponent.isDefending) {
             opponent.isDefending = false
             val message = "🛡️ ${opponent.name} broni się! Obrażenia zostają zredukowane o połowę."
             return GameResponse(true, message)

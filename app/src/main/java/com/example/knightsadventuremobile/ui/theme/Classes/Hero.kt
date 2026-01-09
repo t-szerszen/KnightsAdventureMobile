@@ -2,7 +2,6 @@ package com.example.knightsadventuremobile.ui.theme.Classes
 
 import kotlin.random.Random
 
-// Klasa modelująca obiekt bohatera.
 class Hero(
     name: String,
     health: Int,
@@ -15,70 +14,42 @@ class Hero(
 {
     var gold: Int = 0
 
-    override fun attack(opponent: Character): String
-    {
-        var damage = Random.Default.nextInt(attackPower / 2, attackPower)
+    override fun attack(opponent: Character): String {
+        var damage = Random.Default.nextInt(attackPower / 2, attackPower + 5)
         var message = ""
 
-        // Sprawdzamy czy przeciwnik się broni
         val result = isOpponentDefending(opponent)
         if (result.value) {
             damage = (damage * 0.5).toInt()
-            message += "\n" + result.extra
+            message += (result.extra ?: "") + "\n"
         }
 
-        // Dodatkowy bonus do ataku z poprzedniej tury defensywnej lub eliksiru
         if (hasExtraAttack()) {
             damage = (damage * extraAttack).toInt()
             extraAttack = 0.0
         }
 
-        // Jeśli boahter ma miecz zadaje więcej obrażeń
-        if (hasSword()) damage += 5
+        if (hasSword()) damage += 8 // Zwiększony bonus miecza
 
         isDefending = false
-        opponent.health -= damage
-        if (opponent.health < 0) opponent.health = 0
+        opponent.health = (opponent.health - damage).coerceAtLeast(0)
 
-        message += """
-            ⚔️ $name atakuje ${opponent.name} i zadaje $damage obrażeń!
-            ❤️ HP przeciwnika: ${opponent.health}
-        """.trimIndent()
-
+        message += "⚔️ $name atakuje i zadaje $damage obrażeń!"
         return message
     }
 
-    private fun hasSword(): Boolean
-    {
-        if (equipment.contains("Miecz")) return true
-        return false
-    }
+    private fun hasSword(): Boolean = equipment.contains("Miecz")
 
-    override fun defense(): String
-    {
-        val message = """
-            🛡️ ${name} przyjmuje pozycję obronną!
-            Zyskuje zwiększoną ochronę przed obrażeniami 
-            i przygotowuje silniejszy kontratak w następnej turze.
-        """.trimIndent()
+    override fun defense(): String {
         isDefending = true
-        extraAttack = 1.5
-
-        return message
+        extraAttack = 2.0 // Mocniejszy kontratak (z 1.5 na 2.0)
+        return "🛡️ $name broni się! Następny atak będzie 2x silniejszy!"
     }
 
-    override fun drinkElixir(): String
-    {
-        var message = """
-            🧪 ${name} wypija magiczny eliksir!
-            ✨ Siła ataku chwilowo wzrasta o 20%.
-            ❤️ Odzyskujesz 10 punktów zdrowia.
-        """.trimIndent()
-        extraAttack = 1.2
-        health += 10
+    override fun drinkElixir(): String {
+        extraAttack = 1.3
+        health += 25 // Lepsze leczenie (z 10 na 25)
         elixirUsed = true
-        message += "\nObecne HP: ${health}\n"
-
-        return message
+        return "🧪 $name wypija eliksir! +25 HP i +30% siły."
     }
 }

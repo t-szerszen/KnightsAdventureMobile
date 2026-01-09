@@ -3,7 +3,6 @@ package com.example.knightsadventuremobile.ui.theme.Classes
 import com.example.knightsadventuremobile.ui.theme.Models.GameResponse
 import kotlin.random.Random
 
-// Klasa modelująca obiekt potwora z areny.
 class Monster(
     name: String,
     health: Int,
@@ -16,38 +15,31 @@ class Monster(
 {
     override fun attack(opponent: Character): String {
         var damage = Random.Default.nextInt(attackPower / 2, attackPower)
-        val bodyPart = Random.Default.nextInt(1, 4) // 1 - głowa, 2 - tułów, 3 - nogi
+        val bodyPart = Random.Default.nextInt(1, 4)
         var message = ""
 
-        // Sprawdzamy czy przeciwnik się broni
         val defendingResult = isOpponentDefending(opponent)
         if (defendingResult.value) {
             damage = (damage * 0.5).toInt()
-            message += "\n" + defendingResult.extra
+            message += (defendingResult.extra ?: "") + "\n"
         }
 
-        // Redukujemy obrażenia jeśli bohater ma jakiś pancerz
-        val result = bodyPartHitted(bodyPart, opponent, damage)
-        damage = result.value
-        message += "\n" + result.extra
+        val hitResult = bodyPartHitted(bodyPart, opponent, damage)
+        damage = hitResult.value
+        message += hitResult.extra + "\n"
 
-        // Dodatkowy bonus do ataku z poprzedniej tury defensywnej lub eliksiru
         if (hasExtraAttack()) {
             damage = (damage * extraAttack).toInt()
             extraAttack = 0.0
         }
 
         isDefending = false
-        opponent.health -= damage
-        if (opponent.health < 0) opponent.health = 0
+        opponent.health = (opponent.health - damage).coerceAtLeast(0)
 
-        message += """
-            ⚔️ ${name} zadaje ${damage} obrażeń ${opponent.name}!
-            ❤️ HP ${opponent.name}: ${opponent.health}
-        """
-
+        message += "⚔️ $name zadaje $damage obrażeń ${opponent.name}!"
         return message
     }
+
     private fun bodyPartHitted(bodyPart: Int, opponent: Character, initialDamage: Int): GameResponse<Int, String> {
         var damage = initialDamage
         val armorFactor = Random.Default.nextDouble(0.5, 1.0)
@@ -55,61 +47,43 @@ class Monster(
 
         when (bodyPart) {
             1 -> {
-                message = "\uD83D\uDCA5 ${name} uderza w głowę!"
+                message = "💥 $name uderza w głowę!"
                 if (opponent.equipment.contains("Hełm")) {
-                    val reduced = (damage * armorFactor).toInt()
-                    message += "\n🪖 Hełm ${opponent.name} redukuje (${(armorFactor * 100).toInt()}% obrażeń)"
+                    damage = (damage * armorFactor).toInt()
+                    message += "\n🪖 Hełm redukuje obrażenia!"
                     opponent.equipment.remove("Hełm")
-                    damage = reduced
                 }
             }
             2 -> {
-                message = "\uD83D\uDCA5 ${name} uderza w tułów!"
+                message = "💥 $name uderza w tułów!"
                 if (opponent.equipment.contains("Kolczuga")) {
-                    val reduced = (damage * armorFactor).toInt()
-                    message += "\n🛡️ Kolczuga ${opponent.name} amortyzuje ${(armorFactor * 100).toInt()}% obrażeń"
+                    damage = (damage * armorFactor).toInt()
+                    message += "\n🛡️ Kolczuga amortyzuje cios!"
                     opponent.equipment.remove("Kolczuga")
-                    damage = reduced
                 }
             }
             3 -> {
-                message = "\uD83D\uDCA5 ${name} uderza w nogi!"
+                message = "💥 $name uderza w nogi!"
                 if (opponent.equipment.contains("Nagolenniki")) {
-                    val reduced = (damage * armorFactor).toInt()
-                    message += "\n🩳 Nagolenniki ${opponent.name} redukują ${(armorFactor * 100).toInt()} obrażeń"
+                    damage = (damage * armorFactor).toInt()
+                    message += "\n🩳 Nagolenniki przyjmują uderzenie!"
                     opponent.equipment.remove("Nagolenniki")
-                    damage = reduced
                 }
             }
         }
         return GameResponse(damage, message)
     }
 
-    override fun defense(): String
-    {
-        val message = """
-            🛡️ ${name} przyjmuje pozycję obronną!
-            Zyskuje zwiększoną ochronę przed obrażeniami 
-            i przygotowuje silniejszy kontratak w następnej turze.
-        """.trimIndent()
+    override fun defense(): String {
         isDefending = true
         extraAttack = 1.5
-
-        return message
+        return "🛡️ $name przyjmuje pozycję obronną i szykuje kontratak!"
     }
 
-    override fun drinkElixir(): String
-    {
-        var message = """
-            🧪 ${name} wypija magiczny eliksir!
-            ✨ Siła ataku chwilowo wzrasta o 20%.
-            ❤️ ${name} odzyskuje 10 punktów zdrowia.
-        """.trimIndent()
+    override fun drinkElixir(): String {
         extraAttack = 1.2
         health += 10
         elixirUsed = true
-        message += "\nObecne HP: ${health}\n"
-
-        return message
+        return "🧪 $name wypija eliksir! Siła wzrasta, HP rośnie o 10 pkt."
     }
 }

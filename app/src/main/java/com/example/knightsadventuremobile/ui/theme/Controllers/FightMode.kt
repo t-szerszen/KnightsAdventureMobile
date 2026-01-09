@@ -5,133 +5,69 @@ import com.example.knightsadventuremobile.ui.theme.Classes.Monster
 import kotlin.random.Random
 
 class FightMode {
-    // Metoda rozpoczynająca walkę na arenie potworów.
-    fun startBattle(round: Int, hero: Hero, monster: Monster) {
-        var i:Int = 1
-        var message = """ 
-            ${"=".repeat(50)}
-            "🏹  Rozpoczyna się bitwa $round!"
-            ${"=" .repeat(50)}
-        """
-
-        while (hero.health > 0 && monster.health > 0) {
-            println("\n" + "-".repeat(40))
-            Thread.sleep(700) // lekkie opóźnienie między turami
-
-            val whoStarts = this.drawWhoStarts()
-            when (whoStarts) {
-                1 -> {
-                    println("🎯 Turę $i rozpoczyna bohater!")
-                    this.loadUserMove(hero, monster)
-                    Thread.sleep(600)
-                    this.doMonsterMove(monster, hero)
-                }
-                2 -> {
-                    println("⚔️ Turę $i rozpoczyna potwór!")
-                    this.doMonsterMove(monster, hero)
-                    Thread.sleep(600)
-                    this.loadUserMove(hero, monster)
-                }
-            }
-            i++
-        }
-
-        println("-".repeat(40))
-        if (hero.health > 0) battleSummary(1, round, hero)
-        else battleSummary(2, round, hero)
-        hero.elixirUsed = false
-        monster.elixirUsed = false
+    
+    fun executeHeroAttack(hero: Hero, monster: Monster): String {
+        return hero.attack(monster)
     }
 
-    fun loadUserMove (hero: Hero, monster: Monster)
-    {
-        var message = "\n❓ Co chcesz zrobić? (1 - Atak, 2 - Obrona, 3 - Eliksir)"
-        while (true) {
-            when (readLine()?.trim()) {
-                "1" -> {hero.attack(monster); break}
-                "2" -> {hero.defense(); break}
-                "3" -> {
-                    if (!hero.elixirUsed) {
-                        hero.drinkElixir()
-                        break
-                    } else {
-                        println("🚫 Użyłeś już elixiru nie masz go więcej!")
-                        continue
-                    }
-                }
+    fun executeHeroDefense(hero: Hero): String {
+        return hero.defense()
+    }
 
-                else -> println("❌ Niepoprawny wybór.")
-            }
+    fun executeHeroDrinkElixir(hero: Hero): String {
+        return if (!hero.elixirUsed) {
+            hero.drinkElixir()
+        } else {
+            "🚫 Użyłeś już elixiru nie masz go więcej!"
         }
     }
 
-    fun doMonsterMove (monster: Monster, hero: Hero)
-    {
-        if (monster.health > 0) {
-            val move = this.drawMonsterMove()
-            when (move) {
-                1 -> monster.attack(hero)
-                2 -> monster.defense()
-                3 -> {
-                    if (!monster.elixirUsed) {
-                        monster.drinkElixir()
-                    } else {
-                        this.doMonsterMove(monster, hero)
-                    }
+    fun executeMonsterMove(monster: Monster, hero: Hero): String {
+        if (monster.health <= 0) return ""
+        
+        val move = Random.Default.nextInt(1, 4)
+        return when (move) {
+            1 -> monster.attack(hero)
+            2 -> monster.defense()
+            3 -> {
+                if (!monster.elixirUsed) {
+                    monster.drinkElixir()
+                } else {
+                    // Jeśli eliksir użyty, spróbuj zaatakować
+                    monster.attack(hero)
                 }
             }
+            else -> ""
         }
     }
 
-    fun drawWhoStarts (): Int
-    {
-        val whoStartsTurn:Int = Random.Default.nextInt(1,3)
-        return whoStartsTurn
-    }
+    fun getBattleSummary(isVictory: Boolean, round: Int, hero: Hero): String {
+        var goldChange: Int
+        var regeneratedHealth: Int
+        val resultText: String
 
-    fun drawMonsterMove (): Int
-    {
-        val move:Int = Random.Default.nextInt(1,4)
-        return move
-    }
-
-    // Metoda podsumowująca wynik walki
-    fun battleSummary(result: Int, round: Int, hero: Hero) {
-        var goldChange = 0
-        var regeneratedHealth = 0
-
-        println("\n" + "=".repeat(50))
-        when (result) {
-            1 -> {
-                println("🏆  Wygrałeś walkę!")
-                goldChange = 25 * round
-                hero.gold += goldChange
-                regeneratedHealth = 25 * round
-                hero.health += regeneratedHealth
-                println("""
-                    🪙 Zdobyłeś ${goldChange} sztuk złota.
-                    🩹 Odzyskałeś ${regeneratedHealth} punktów zdrowia.
-                    👝 Posiadasz w sakiewce ${hero.gold} sztuk złota.
-                    💖 Masz ${hero.health} punktów zdrowia.
-                    """.trimIndent()
-                )
-            }
-            2 -> {
-                println("💀  Przegrałeś walkę...")
-                goldChange = 10 * round
-                hero.gold -= goldChange
-                regeneratedHealth = 15 * round
-                hero.health += regeneratedHealth
-                println("""
-                    🪙 Straciłeś ${goldChange} sztuk złota.
-                    🩹 Odzyskałeś ${regeneratedHealth} punktów zdrowia.
-                    👝 Posiadasz w sakiewce ${hero.gold} sztuk złota.
-                    💖 Masz ${hero.health} punktów zdrowia.
-                    """.trimIndent()
-                )
-            }
+        if (isVictory) {
+            resultText = "🏆 Wygrałeś walkę!"
+            goldChange = 25 * round
+            hero.gold += goldChange
+            regeneratedHealth = 25 * round
+            hero.health += regeneratedHealth
+        } else {
+            resultText = "💀 Przegrałeś walkę..."
+            goldChange = 10 * round
+            hero.gold = (hero.gold - goldChange).coerceAtLeast(0)
+            regeneratedHealth = 15 * round
+            hero.health += regeneratedHealth
         }
 
-        println("=" .repeat(50) + "\n")
+        hero.elixirUsed = false // Reset na koniec walki
+
+        return """
+            $resultText
+            ${if (isVictory) "🪙 Zdobyłeś" else "🪙 Straciłeś"} $goldChange sztuk złota.
+            🩹 Odzyskałeś $regeneratedHealth punktów zdrowia.
+            👝 Posiadasz w sakiewce ${hero.gold} sztuk złota.
+            💖 Masz ${hero.health} punktów zdrowia.
+        """.trimIndent()
     }
 }
